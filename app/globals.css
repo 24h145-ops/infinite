@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sole-black: #050505;
+  --color-sole-surface: #111111;
+  --color-sole-card: #161616;
+  --color-sole-border: #1f1f1f;
+  
+  --color-sole-red: #E8001C;
+  --color-sole-dark-red: #8B0010;
+  --color-sole-red-glow: rgba(232,0,28,0.15);
+  
+  --color-sole-white: #F0F0F0;
+  --color-sole-grey: #888888;
+  --color-sole-light-grey: #AAAAAA;
+
+  --font-sans: var(--font-barlow), sans-serif;
+  --font-display: var(--font-barlow-condensed), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
+}
+
+body {
+  @apply bg-sole-black text-sole-white font-sans font-light antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-sole-red text-sole-white uppercase font-mono tracking-[3px] text-[11px] font-bold py-3 px-6 transition-colors hover:bg-[#C5001A] rounded-none border-none cursor-pointer;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent text-sole-red border border-sole-red uppercase font-mono tracking-[3px] text-[11px] font-bold py-3 px-6 transition-colors hover:bg-sole-red hover:text-sole-white rounded-none cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-sole-red border-none uppercase font-mono tracking-[3px] text-[11px] font-bold transition-all hover:underline cursor-pointer p-0;
+  }
+
+  .card {
+    @apply bg-sole-card border border-sole-border rounded-none sm:rounded-sm transition-colors;
+  }
+  
+  .card:hover {
+    @apply border-l-2 border-l-sole-red border-t-sole-border border-r-sole-border border-b-sole-border;
+  }
+}
+
+/* Skeleton animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(to right, #1a1a1a 8%, #252525 18%, #1a1a1a 33%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s linear infinite forwards;
+}
