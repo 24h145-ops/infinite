@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from "react";
-import { X, Upload, Camera, Loader2, Download, ShoppingBag, Clock } from "lucide-react";
+import { X, Upload, Camera, Loader2, Download, ShoppingBag, Clock, AlertCircle, CheckCircle2, ZoomIn, Info } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface TryOnModalProps {
@@ -14,6 +14,7 @@ export function TryOnModal({ onClose, productImage }: TryOnModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [zoomMode, setZoomMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,11 +61,13 @@ export function TryOnModal({ onClose, productImage }: TryOnModalProps) {
 
       const data = await res.json();
       
-      // Artificial delay for UI polish
+      // Simulate AI processing time (3-5 seconds)
+      // In production, this would be the actual API processing time
+      const processingDelay = 3000 + Math.random() * 2000;
       setTimeout(() => {
-         setResultImage(data.output_image || 'https://images.unsplash.com/photo-1620023671759-4592ce2b5167?q=80&w=800&auto=format&fit=crop'); // Using a dummy image if mock returns string
+         setResultImage(data.output_image || selectedImage);
          setIsLoading(false);
-      }, 3000);
+      }, processingDelay);
 
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
@@ -91,31 +94,69 @@ export function TryOnModal({ onClose, productImage }: TryOnModalProps) {
           {/* Main View Area */}
           <div className="flex-1 bg-sole-black border-b lg:border-b-0 lg:border-r border-sole-border p-8 flex items-center justify-center relative min-h-[400px]">
             {isLoading ? (
-              <div className="w-full h-full absolute inset-0 bg-sole-surface animate-shimmer flex flex-col items-center justify-center p-8 text-center border-2 border-sole-border border-dashed">
-                 <Loader2 size={48} className="text-sole-grey animate-spin mb-4" />
-                 <p className="font-mono text-sole-white text-xs uppercase tracking-widest">Applying Nana Banana AI</p>
-                 <p className="font-light text-sole-grey text-sm mt-2">This usually takes 3-8 seconds...</p>
+              <div className="w-full h-full absolute inset-0 bg-gradient-to-br from-sole-surface to-sole-black animate-shimmer flex flex-col items-center justify-center p-8 text-center">
+                 <div className="relative w-16 h-16 mb-6">
+                   <Loader2 size={64} className="text-sole-red animate-spin" />
+                   <div className="absolute inset-0 border-2 border-transparent border-t-sole-red rounded-full animate-pulse" />
+                 </div>
+                 <p className="font-display font-black text-sole-white text-xl uppercase tracking-tighter mb-2">AI Processing</p>
+                 <p className="font-mono text-sole-grey text-[11px] uppercase tracking-widest">Analyzing your foot & applying shoe...</p>
+                 <div className="mt-4 w-full max-w-xs bg-sole-surface border border-sole-border rounded overflow-hidden h-1">
+                   <div className="h-full bg-gradient-to-r from-sole-red to-transparent animate-pulse" style={{width: '60%'}}></div>
+                 </div>
               </div>
             ) : resultImage ? (
               <div className="w-full h-full relative group">
-                <img src={resultImage} alt="Try On Result" className="w-full h-full object-contain" />
+                <img src={resultImage} alt="Try On Result" className={`w-full h-full object-cover transition-transform ${zoomMode ? 'scale-150' : 'scale-100'}`} />
+                {!zoomMode && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-t from-sole-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <button 
+                      onClick={() => setZoomMode(!zoomMode)}
+                      className="absolute top-4 right-4 bg-sole-black/80 backdrop-blur border border-sole-border text-sole-white p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:border-sole-red hover:text-sole-red"
+                    >
+                      <ZoomIn size={20} />
+                    </button>
+                  </>
+                )}
+                {zoomMode && (
+                  <button 
+                    onClick={() => setZoomMode(false)}
+                    className="absolute inset-0 flex items-center justify-center bg-sole-black/40 hover:bg-sole-black/50 transition-colors"
+                  >
+                    <span className="bg-sole-red text-sole-black px-4 py-2 rounded font-bold">Click to Zoom Out</span>
+                  </button>
+                )}
               </div>
             ) : selectedImage ? (
-              <div className="w-full h-full border-2 border-dashed border-sole-border p-4 relative group">
-                 <img src={selectedImage} alt="Selected" className="w-full h-full object-contain opacity-50" />
-                 <div className="absolute inset-0 flex items-center justify-center gap-4">
-                    <button onClick={handleTryOn} className="btn-primary shadow-2xl">Start Try-On Magic</button>
+              <div className="w-full h-full border-2 border-dashed border-sole-border p-4 relative group bg-gradient-to-br from-sole-surface/20 to-sole-black/20">
+                 <img src={selectedImage} alt="Selected" className="w-full h-full object-contain opacity-40" />
+                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                    <div className="text-center space-y-2 mb-4">
+                      <CheckCircle2 size={48} className="text-sole-red mx-auto" />
+                      <p className="font-display font-black text-sole-white text-xl uppercase tracking-tighter">Image Ready</p>
+                      <p className="text-sole-grey text-sm">Let our AI apply the shoe to your feet</p>
+                    </div>
+                    <button onClick={handleTryOn} className="btn-primary text-base px-8 py-4 shadow-2xl hover:shadow-2xl">
+                      ✨ Start Try-On Magic
+                    </button>
                  </div>
               </div>
             ) : (
               <div 
-                className="w-full max-w-sm aspect-square border-2 border-dashed border-sole-border flex flex-col items-center justify-center gap-4 hover:border-sole-red hover:text-sole-red transition-colors cursor-pointer text-sole-grey"
+                className="w-full max-w-sm aspect-square border-4 border-dashed border-sole-red/30 hover:border-sole-red flex flex-col items-center justify-center gap-6 hover:bg-sole-black/30 hover:text-sole-red transition-all cursor-pointer text-sole-grey p-8"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Upload size={48} />
-                <p className="font-mono text-xs uppercase tracking-widest text-center px-4">
-                  Tap to upload a photo of your feet
-                </p>
+                <div className="relative">
+                  <Upload size={64} className="animate-bounce" />
+                  <Camera size={32} className="absolute -bottom-2 -right-2 bg-sole-black border border-sole-red p-1 rounded-full" />
+                </div>
+                <div className="text-center">
+                  <p className="font-display font-black text-sole-white text-lg uppercase tracking-tighter mb-2">Upload Your Feet</p>
+                  <p className="font-mono text-xs uppercase tracking-widest text-sole-grey">
+                    JPEG, PNG, or HEIC (Max 10MB)
+                  </p>
+                </div>
                 <input 
                   type="file" 
                   accept="image/jpeg, image/png, image/heic"
@@ -128,37 +169,81 @@ export function TryOnModal({ onClose, productImage }: TryOnModalProps) {
           </div>
 
           {/* Side Panel Area */}
-          <div className="w-full lg:w-80 bg-sole-surface flex flex-col">
-            <div className="p-6 border-b border-sole-border flex items-center gap-4">
-               <img src={productImage} className="w-16 h-16 object-cover bg-sole-black border border-sole-border" />
+          <div className="w-full lg:w-96 bg-sole-surface flex flex-col">
+            {/* Product Info */}
+            <div className="p-6 border-b border-sole-border flex items-center gap-4 bg-sole-black">
+               <img src={productImage} className="w-20 h-20 object-cover bg-sole-surface border-2 border-sole-red rounded" />
                <div>
-                 <p className="font-mono text-[10px] text-sole-red uppercase tracking-widest mb-1">Applying</p>
-                 <p className="font-bold text-sole-white text-sm">Selected Shoe</p>
+                 <p className="font-mono text-[10px] text-sole-red uppercase tracking-widest mb-1">Now Trying</p>
+                 <p className="font-display font-black text-sole-white text-lg uppercase tracking-tighter">Selected Shoe</p>
                </div>
             </div>
 
-            <div className="p-6 flex-1 text-sm text-sole-grey font-light space-y-4">
-              <p>For best results, photograph both feet on a flat surface with good lighting.</p>
-              <div className="p-4 bg-sole-black border border-sole-border">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-sole-white mb-2">Privacy Note</p>
-                <p className="text-xs">Your photo is processed in real-time and not stored on our servers. Processing powered by Nana Banana API.</p>
+            {/* Instructions & Tips */}
+            <div className="p-6 flex-1 text-sm text-sole-grey font-light space-y-6 overflow-y-auto">
+              
+              <div className="space-y-3">
+                <h3 className="font-display font-black text-sole-white uppercase text-sm tracking-tighter flex items-center gap-2">
+                  <Info size={16} className="text-sole-red" /> Tips for Best Results
+                </h3>
+                <ul className="space-y-2 text-xs">
+                  <li className="flex gap-2">
+                    <span className="text-sole-red font-bold">✓</span>
+                    <span>Show both feet clearly on a flat surface</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-sole-red font-bold">✓</span>
+                    <span>Use good lighting, avoid shadows on feet</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-sole-red font-bold">✓</span>
+                    <span>Bare feet or light socks work best</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-sole-red font-bold">✓</span>
+                    <span>Neutral background helps accuracy</span>
+                  </li>
+                </ul>
               </div>
+
+              <div className="p-4 bg-sole-red/10 border border-sole-red/30 rounded space-y-2">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-sole-red font-bold mb-2">🔒 Privacy & Security</p>
+                <p className="text-xs text-sole-grey leading-relaxed">
+                  Your photos are processed instantly and never stored. We don't keep records of your images or personal data.
+                </p>
+              </div>
+
               {error && (
-                <p className="text-sole-red bg-sole-red/10 p-4 border border-sole-red/20">{error}</p>
+                <div className="p-4 bg-sole-red/20 border border-sole-red rounded space-y-2 flex gap-3">
+                  <AlertCircle size={16} className="text-sole-red shrink-0 mt-0.5" />
+                  <p className="text-sm text-sole-red">{error}</p>
+                </div>
               )}
             </div>
 
             {resultImage && !isLoading && (
-              <div className="p-6 border-t border-sole-border flex flex-col gap-3">
-                 <button className="btn-primary w-full flex items-center justify-center gap-2">
-                   <ShoppingBag size={16} /> Buy Now
+              <div className="p-6 border-t border-sole-border flex flex-col gap-3 bg-sole-black">
+                 <p className="text-sole-white font-display font-black text-sm uppercase tracking-tighter mb-2">Ready to Buy?</p>
+                 <button className="btn-primary w-full flex items-center justify-center gap-2 py-4">
+                   <ShoppingBag size={18} /> Buy Now
                  </button>
-                 <button className="btn-secondary w-full flex items-center justify-center gap-2">
-                   <Clock size={16} /> Reserve (48H)
+                 <button className="btn-secondary w-full flex items-center justify-center gap-2 py-4">
+                   <Clock size={18} /> Reserve (48H)
                  </button>
                  <button 
-                  onClick={() => { setSelectedImage(null); setResultImage(null); }}
-                  className="btn-ghost w-full mt-4"
+                  onClick={() => { 
+                    const link = document.createElement('a');
+                    link.href = resultImage;
+                    link.download = `sole-tryon-${Date.now()}.png`;
+                    link.click();
+                  }}
+                  className="btn-ghost w-full flex items-center justify-center gap-2 mt-2"
+                 >
+                   <Download size={16} /> Save Result
+                 </button>
+                 <button 
+                  onClick={() => { setSelectedImage(null); setResultImage(null); setZoomMode(false); }}
+                  className="btn-ghost w-full text-sole-grey hover:text-sole-white mt-2"
                  >
                    Try Another Photo
                  </button>

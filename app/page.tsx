@@ -92,18 +92,36 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-500" key={gender}>
-          {/* Skeleton cards for mockup */}
-          {[1,2,3,4,5,6,7,8].map((i) => (
-            <Link href={`/product/${i}`} key={i} className="card p-0 flex flex-col group cursor-pointer bg-sole-surface border-sole-border block">
+          {/* Product cards from actual inventory */}
+          {(gender === 'men' ? [
+            { id: 1, name: 'Oxford Shoes', category: 'Formal', price: '₹8,999', image: '/products/mens/formal/oxford shoes/oxford shoes 1.jpg' },
+            { id: 2, name: 'Monk Strap', category: 'Formal', price: '₹9,499', image: '/products/mens/formal/monk strap/monk strap1.jpg' },
+            { id: 3, name: 'Chelsea Boot', category: 'Formal', price: '₹10,499', image: '/products/mens/formal/boots/chelsea boot/chelsea.jpg' },
+            { id: 4, name: 'Combat Boot', category: 'Formal', price: '₹9,999', image: '/products/mens/formal/boots/combat boot/combat boot 1.jpg' },
+            { id: 5, name: 'Derby Shoes', category: 'Formal', price: '₹8,499', image: '/products/mens/formal/derby shoes/derby shoes 1.jpg' },
+            { id: 6, name: 'Boat Sneak', category: 'Casual', price: '₹6,999', image: '/products/mens/casuals/boat sneak/boat sneak 1.jpg' },
+            { id: 7, name: 'Casual Sneaker', category: 'Casual', price: '₹5,999', image: '/products/mens/casuals/casual 1.jpg' },
+            { id: 8, name: 'Sports Shoe', category: 'Sports', price: '₹7,999', image: '/products/mens/sports/sports 1.jpg' }
+          ] : [
+            { id: 1, name: 'Heels', category: 'Heels', price: '₹7,499', image: '/products/womens/heels/heel1.png' },
+            { id: 2, name: 'Casual Sneaker', category: 'Casual', price: '₹5,999', image: '/products/womens/casuals/casual1.png' },
+            { id: 3, name: 'Flat Shoes', category: 'Flats', price: '₹4,999', image: '/products/womens/flats/flats1.png' },
+            { id: 4, name: 'Sandals', category: 'Sandals', price: '₹3,999', image: '/products/womens/sandals/sandals 1.jpg' },
+            { id: 5, name: 'Sports Shoe', category: 'Sports', price: '₹6,999', image: '/products/womens/sports/sport1.png' },
+            { id: 6, name: 'Heel Boots', category: 'Heels', price: '₹8,499', image: '/products/womens/heels/heel3.png' },
+            { id: 7, name: 'Casual Flat', category: 'Casual', price: '₹5,499', image: '/products/womens/casuals/casual2.png' },
+            { id: 8, name: 'Athletic Shoe', category: 'Sports', price: '₹7,999', image: '/products/womens/sports/sport2.png' }
+          ]).map((product) => (
+            <Link href={`/product/${product.id}`} key={product.id} className="card p-0 flex flex-col group cursor-pointer bg-sole-surface border-sole-border block">
               <div className="aspect-[4/5] bg-sole-black w-full relative overflow-hidden flex items-center justify-center">
-                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity mix-blend-luminosity hover:mix-blend-normal" />
+                 <div className="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity mix-blend-luminosity hover:mix-blend-normal" style={{backgroundImage: `url('${product.image}')`}} />
               </div>
               <div className="p-4 flex flex-col gap-2 relative z-10 bg-sole-surface">
                 <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-sole-white text-lg">NIKE AIR MAX {i}</h3>
-                  <span className="font-mono font-bold text-sole-white">₹12,999</span>
+                  <h3 className="font-bold text-sole-white text-lg">{product.name}</h3>
+                  <span className="font-mono font-bold text-sole-white">{product.price}</span>
                 </div>
-                <p className="text-sole-grey text-xs uppercase font-mono tracking-widest">{categories[gender][i % 6]}</p>
+                <p className="text-sole-grey text-xs uppercase font-mono tracking-widest">{product.category}</p>
                 <div className="flex gap-1 mt-1">
                   <div className="w-3 h-3 rounded-full bg-red-600 border border-sole-border"></div>
                   <div className="w-3 h-3 rounded-full bg-black border border-sole-border"></div>

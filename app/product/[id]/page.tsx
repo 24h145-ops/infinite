@@ -14,19 +14,19 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const product = {
     id: params.id,
-    name: 'PUMA RS-X 3D',
-    brand: 'PUMA',
-    price: 4999,
-    category: "Men's Athletic",
-    description: 'The RS-X is back. The future-retro silhouette of this sneaker returns with progressive aesthetic and angular details, complete with nubuck and suede overlays. The combo\'s all about a disruptive design to showcase your disruptive style.',
-    colors: ['Red/Black', 'White/Blue', 'Triple Black'],
+    name: 'Monk Strap Oxford',
+    brand: 'Premium Formal',
+    price: 9499,
+    category: "Men's Formal",
+    description: 'Elegant monk strap formal shoes perfect for business and special occasions. Crafted with premium leather and featuring a classic double buckle design, these shoes offer both style and comfort. The sophisticated monk strap design makes them a versatile choice for professional settings.',
+    colors: ['Brown/Black', 'Black', 'Cognac'],
     sizes: [6, 7, 8, 9, 10, 11, 12],
     stock: 14,
     images: [
-      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1620023671759-4592ce2b5167?q=80&w=800&auto=format&fit=crop'
+      '/products/mens/formal/monk strap/monk strap1.jpg',
+      '/products/mens/formal/monk strap/monk strap 2.jpg',
+      '/products/mens/formal/monk strap/monk strap 3.jpg',
+      '/products/mens/formal/monk strap/monk strap 4.jpg'
     ]
   };
 
