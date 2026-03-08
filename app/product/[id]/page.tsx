@@ -1,19 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, Ruler, Info, Share2, Heart, Search } from 'lucide-react';
 import { TryOnModal } from '@/components/tryon/TryOnModal';
-import { ReservationModal } from '@/components/reservation/ReservationModal';
+import { HoldModal } from '@/components/reservation/HoldModal';
+import { useCart } from '@/lib/cart-context';
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  // unwrap the params promise, this works for server or client
+  const { id } = use(params);
+
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [showTryOn, setShowTryOn] = useState(false);
-  const [showReservation, setShowReservation] = useState(false);
+  const [showHold, setShowHold] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const { addToCart } = useCart();
 
   const product = {
-    id: params.id,
+    id, 
     name: 'Monk Strap Oxford',
     brand: 'Premium Formal',
     price: 9499,
@@ -40,10 +45,27 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <h1 className="font-display font-black text-xl tracking-tighter uppercase truncate flex-1">
             {product.name}
           </h1>
-          <button className="text-sole-grey hover:text-sole-white transition-colors">
+          <button
+            className="text-sole-grey hover:text-sole-white transition-colors"
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: product.name,
+                  text: product.description,
+                  url: window.location.href,
+                });
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+              }
+            }}
+          >
             <Share2 size={20} />
           </button>
-          <button className="text-sole-grey hover:text-sole-red transition-colors">
+          <button
+            className="text-sole-grey hover:text-sole-red transition-colors"
+            onClick={() => alert('Added to favorites!')}
+          >
             <Heart size={20} />
           </button>
         </div>
@@ -146,8 +168,19 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <button 
                 className="btn-primary py-4 w-full text-sm"
                 onClick={() => {
-                  if(!selectedSize) alert("Please select a size first");
-                  else alert("Added to cart!");
+                  if(!selectedSize) {
+                    alert("Please select a size first");
+                    return;
+                  }
+                  addToCart({
+                    id: parseInt(product.id),
+                    name: product.name,
+                    price: product.price,
+                    size: selectedSize,
+                    image: product.images[0],
+                    category: product.category
+                  });
+                  alert(`Added ${product.name} to cart!`);
                 }}
               >
                 Add to Cart — ₹{product.price}
@@ -156,18 +189,18 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 className="btn-secondary py-4 w-full text-sm"
                 onClick={() => {
                   if(!selectedSize) alert("Please select a size first");
-                  else setShowReservation(true);
+                  else setShowHold(true);
                 }}
               >
-                Reserve for 48H (Pay 50%)
+                Hold for 48H (Pay 50%)
               </button>
            </div>
 
         </div>
       </main>
 
-      {showTryOn && <TryOnModal onClose={() => setShowTryOn(false)} productImage={product.images[0]} />}
-      {showReservation && <ReservationModal onClose={() => setShowReservation(false)} product={product} size={selectedSize!} />}
+      {showHold && <HoldModal onClose={() => setShowHold(false)} product={product} size={selectedSize!} />}
+      {showHold && <HoldModal onClose={() => setShowHold(false)} product={product} size={selectedSize!} />}
     </div>
   );
 }

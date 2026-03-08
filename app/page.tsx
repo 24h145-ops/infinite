@@ -1,12 +1,15 @@
 'use client';
 
-import { ShoppingBag, User, Menu } from "lucide-react";
+import { ShoppingBag, User, Menu, MapPin, Store } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 import Link from "next/link";
 import { useState } from "react";
+import { useCart } from "@/lib/cart-context";
 
 export default function Home() {
   const [gender, setGender] = useState<'men' | 'women'>('men');
+  const [sortBy, setSortBy] = useState('newest');
+  const { addToCart, getTotalItems } = useCart();
 
   const categories = {
     men: ['Formal', 'Casual', 'Athletic/Sports', 'Boots', 'Open Shoes', 'Ethnic Wear'],
@@ -31,14 +34,22 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4">
+            <Link href="/stores" className="text-sole-grey hover:text-sole-white transition-colors hidden sm:block">
+              <Store size={20} />
+            </Link>
+            <Link href="/nearby" className="text-sole-grey hover:text-sole-white transition-colors hidden sm:block">
+              <MapPin size={20} />
+            </Link>
             <Link href="/profile" className="text-sole-grey hover:text-sole-white transition-colors">
               <User size={20} />
             </Link>
             <Link href="/cart" className="text-sole-grey hover:text-sole-white transition-colors relative">
               <ShoppingBag size={20} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-sole-red rounded-full text-[9px] flex justify-center items-center font-bold">
-                0
-              </span>
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-sole-red rounded-full text-[9px] flex justify-center items-center font-bold">
+                  {getTotalItems()}
+                </span>
+              )}
             </Link>
           </div>
         </div>
@@ -83,35 +94,55 @@ export default function Home() {
             {gender}'s Collection
           </h2>
           <div className="flex gap-4">
-            <select className="bg-transparent border border-sole-border text-sole-white font-mono text-[11px] uppercase tracking-[1px] px-3 py-2 outline-none focus:border-sole-red cursor-pointer">
-              <option className="bg-sole-black">Sort: Newest</option>
-              <option className="bg-sole-black">Price: Low-High</option>
-              <option className="bg-sole-black">Price: High-Low</option>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent border border-sole-border text-sole-white font-mono text-[11px] uppercase tracking-[1px] px-3 py-2 outline-none focus:border-sole-red cursor-pointer"
+            >
+              <option value="newest" className="bg-sole-black">Sort: Newest</option>
+              <option value="price-low" className="bg-sole-black">Price: Low-High</option>
+              <option value="price-high" className="bg-sole-black">Price: High-Low</option>
             </select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-500" key={gender}>
           {/* Product cards from actual inventory */}
-          {(gender === 'men' ? [
-            { id: 1, name: 'Oxford Shoes', category: 'Formal', price: '₹8,999', image: '/products/mens/formal/oxford shoes/oxford shoes 1.jpg' },
-            { id: 2, name: 'Monk Strap', category: 'Formal', price: '₹9,499', image: '/products/mens/formal/monk strap/monk strap1.jpg' },
-            { id: 3, name: 'Chelsea Boot', category: 'Formal', price: '₹10,499', image: '/products/mens/formal/boots/chelsea boot/chelsea.jpg' },
-            { id: 4, name: 'Combat Boot', category: 'Formal', price: '₹9,999', image: '/products/mens/formal/boots/combat boot/combat boot 1.jpg' },
-            { id: 5, name: 'Derby Shoes', category: 'Formal', price: '₹8,499', image: '/products/mens/formal/derby shoes/derby shoes 1.jpg' },
-            { id: 6, name: 'Boat Sneak', category: 'Casual', price: '₹6,999', image: '/products/mens/casuals/boat sneak/boat sneak 1.jpg' },
-            { id: 7, name: 'Casual Sneaker', category: 'Casual', price: '₹5,999', image: '/products/mens/casuals/casual 1.jpg' },
-            { id: 8, name: 'Sports Shoe', category: 'Sports', price: '₹7,999', image: '/products/mens/sports/sports 1.jpg' }
-          ] : [
-            { id: 1, name: 'Heels', category: 'Heels', price: '₹7,499', image: '/products/womens/heels/heel1.png' },
-            { id: 2, name: 'Casual Sneaker', category: 'Casual', price: '₹5,999', image: '/products/womens/casuals/casual1.png' },
-            { id: 3, name: 'Flat Shoes', category: 'Flats', price: '₹4,999', image: '/products/womens/flats/flats1.png' },
-            { id: 4, name: 'Sandals', category: 'Sandals', price: '₹3,999', image: '/products/womens/sandals/sandals 1.jpg' },
-            { id: 5, name: 'Sports Shoe', category: 'Sports', price: '₹6,999', image: '/products/womens/sports/sport1.png' },
-            { id: 6, name: 'Heel Boots', category: 'Heels', price: '₹8,499', image: '/products/womens/heels/heel3.png' },
-            { id: 7, name: 'Casual Flat', category: 'Casual', price: '₹5,499', image: '/products/womens/casuals/casual2.png' },
-            { id: 8, name: 'Athletic Shoe', category: 'Sports', price: '₹7,999', image: '/products/womens/sports/sport2.png' }
-          ]).map((product) => (
+          {(() => {
+            const products = (gender === 'men' ? [
+              { id: 1, name: 'Oxford Shoes', category: 'Formal', price: '₹8,999', priceValue: 8999, image: '/products/mens/formal/oxford shoes/oxford shoes 1.jpg' },
+              { id: 2, name: 'Monk Strap', category: 'Formal', price: '₹9,499', priceValue: 9499, image: '/products/mens/formal/monk strap/monk strap1.jpg' },
+              { id: 3, name: 'Chelsea Boot', category: 'Formal', price: '₹10,499', priceValue: 10499, image: '/products/mens/formal/boots/chelsea boot/chelsea.jpg' },
+              { id: 4, name: 'Combat Boot', category: 'Formal', price: '₹9,999', priceValue: 9999, image: '/products/mens/formal/boots/combat boot/combat boot 1.jpg' },
+              { id: 5, name: 'Derby Shoes', category: 'Formal', price: '₹8,499', priceValue: 8499, image: '/products/mens/formal/derby shoes/derby shoes 1.jpg' },
+              { id: 6, name: 'Boat Sneak', category: 'Casual', price: '₹6,999', priceValue: 6999, image: '/products/mens/casuals/boat sneak/boat sneak 1.jpg' },
+              { id: 7, name: 'Casual Sneaker', category: 'Casual', price: '₹5,999', priceValue: 5999, image: '/products/mens/casuals/casual 1.jpg' },
+              { id: 8, name: 'Sports Shoe', category: 'Sports', price: '₹7,999', priceValue: 7999, image: '/products/mens/sports/sports 1.jpg' }
+            ] : [
+              { id: 1, name: 'Heels', category: 'Heels', price: '₹7,499', priceValue: 7499, image: '/products/womens/heels/heel1.png' },
+              { id: 2, name: 'Casual Sneaker', category: 'Casual', price: '₹5,999', priceValue: 5999, image: '/products/womens/casuals/casual1.png' },
+              { id: 3, name: 'Flat Shoes', category: 'Flats', price: '₹4,999', priceValue: 4999, image: '/products/womens/flats/flats1.png' },
+              { id: 4, name: 'Sandals', category: 'Sandals', price: '₹3,999', priceValue: 3999, image: '/products/womens/sandals/sandals 1.jpg' },
+              { id: 5, name: 'Sports Shoe', category: 'Sports', price: '₹6,999', priceValue: 6999, image: '/products/womens/sports/sport1.png' },
+              { id: 6, name: 'Heel Boots', category: 'Heels', price: '₹8,499', priceValue: 8499, image: '/products/womens/heels/heel3.png' },
+              { id: 7, name: 'Casual Flat', category: 'Casual', price: '₹5,499', priceValue: 5499, image: '/products/womens/casuals/casual2.png' },
+              { id: 8, name: 'Athletic Shoe', category: 'Sports', price: '₹7,999', priceValue: 7999, image: '/products/womens/sports/sport2.png' }
+            ]);
+
+            // Sort products based on sortBy
+            const sortedProducts = [...products].sort((a, b) => {
+              switch (sortBy) {
+                case 'price-low':
+                  return a.priceValue - b.priceValue;
+                case 'price-high':
+                  return b.priceValue - a.priceValue;
+                case 'newest':
+                default:
+                  return b.id - a.id; // Assuming higher ID means newer
+              }
+            });
+
+            return sortedProducts.map((product) => (
             <Link href={`/product/${product.id}`} key={product.id} className="card p-0 flex flex-col group cursor-pointer bg-sole-surface border-sole-border block">
               <div className="aspect-[4/5] bg-sole-black w-full relative overflow-hidden flex items-center justify-center">
                  <div className="absolute inset-0 bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity mix-blend-luminosity hover:mix-blend-normal" style={{backgroundImage: `url('${product.image}')`}} />
@@ -128,12 +159,37 @@ export default function Home() {
                   <div className="w-3 h-3 rounded-full bg-white border border-sole-border"></div>
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <button className="btn-primary flex-1 py-3 text-[10px]" onClick={(e) => e.preventDefault()}>Add to Cart</button>
-                  <button className="btn-secondary w-1/3 py-3 text-[10px]" onClick={(e) => e.preventDefault()}>Reserve</button>
+                  <button
+                    className="btn-primary flex-1 py-3 text-[10px]"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToCart({
+                        id: product.id,
+                        name: product.name,
+                        price: parseInt(product.price.replace(/[^\d]/g, '')),
+                        size: 9, // Default size
+                        image: product.image,
+                        category: product.category
+                      });
+                      alert(`Added ${product.name} to cart!`);
+                    }}
+                  >
+                    Add to Cart
+                  </button>
+                  <button
+                    className="btn-secondary w-1/3 py-3 text-[10px]"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert(`Held ${product.name} for 48 hours!`);
+                    }}
+                  >
+                    Hold
+                  </button>
                 </div>
               </div>
             </Link>
-          ))}
+          ));
+          })()}
         </div>
       </main>
     </div>

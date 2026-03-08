@@ -228,7 +228,7 @@ export function TryOnModal({ onClose, productImage }: TryOnModalProps) {
                    <ShoppingBag size={18} /> Buy Now
                  </button>
                  <button className="btn-secondary w-full flex items-center justify-center gap-2 py-4">
-                   <Clock size={18} /> Reserve (48H)
+                   <Clock size={18} /> Hold (48H)
                  </button>
                  <button 
                   onClick={() => { 

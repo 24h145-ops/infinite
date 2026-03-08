@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { X, Clock, ShieldCheck, ChevronRight, Copy, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
-interface ReservationModalProps {
+interface HoldModalProps {
   onClose: () => void;
   product: any;
   size: number;
 }
 
-export function ReservationModal({ onClose, product, size }: ReservationModalProps) {
+export function HoldModal({ onClose, product, size }: HoldModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPaymentMethod, setShowPaymentMethod] = useState(false);
@@ -28,7 +28,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
     setTimeout(() => setCopiedUPI(false), 2000);
   };
 
-  const handleReserve = async () => {
+  const handleHold = async () => {
     setIsLoading(true);
     setError(null);
 
@@ -37,7 +37,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        window.location.href = '/login?message=Please sign in to reserve products';
+        window.location.href = '/login?message=Please sign in to hold products';
         return;
       }
 
@@ -49,7 +49,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
           amount: holdAmount,
           productId: product.id,
           size: size,
-          type: 'reservation'
+          type: 'hold'
         })
       });
 
@@ -59,7 +59,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
       setIsLoading(false);
 
     } catch (err: any) {
-      setError(err.message || "Failed to process reservation");
+      setError(err.message || "Failed to process hold");
       setIsLoading(false);
     }
   };
@@ -79,7 +79,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
             <CheckCircle size={56} className="text-sole-red animate-pulse" />
           </div>
           <h2 className="font-display font-black text-2xl uppercase tracking-tighter text-sole-white mb-2">Payment Successful!</h2>
-          <p className="text-sole-grey text-sm mb-4">Your item is now reserved for 48 hours</p>
+          <p className="text-sole-grey text-sm mb-4">Your item is now held for 48 hours</p>
           <div className="bg-sole-black border border-sole-border p-4 rounded text-left text-sm">
             <p className="text-sole-grey mb-2"><span className="text-sole-white">Product:</span> {product.name}</p>
             <p className="text-sole-grey mb-2"><span className="text-sole-white">Hold Amount:</span> ₹{holdAmount}</p>
@@ -97,7 +97,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-sole-border">
           <h2 className="font-display font-black text-2xl uppercase tracking-tighter text-sole-white flex items-center gap-2">
-            <Clock size={24} className="text-sole-red" /> {showPaymentMethod ? 'Pay Now' : 'Secure Reservation'}
+            <Clock size={24} className="text-sole-red" /> {showPaymentMethod ? 'Pay Now' : 'Secure Hold'}
           </h2>
           <button onClick={onClose} className="text-sole-grey hover:text-sole-white transition-colors">
             <X size={24} />
@@ -127,7 +127,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
                  <span className="font-mono text-sole-white">₹{product.price}</span>
                </div>
                <div className="flex justify-between items-center text-sm font-light text-sole-grey">
-                 <span>Reservation Hold (50%)</span>
+                 <span>Hold Amount (50%)</span>
                  <span className="font-mono text-sole-red font-bold">₹{holdAmount.toFixed(0)}</span>
                </div>
 
@@ -160,7 +160,7 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
             <div className="p-6 pt-0 border-none flex flex-col gap-3">
                <button 
                  className="btn-primary w-full py-4 text-sm"
-                 onClick={handleReserve}
+                 onClick={handleHold}
                  disabled={isLoading}
                >
                  {isLoading ? (
@@ -261,51 +261,6 @@ export function ReservationModal({ onClose, product, size }: ReservationModalPro
             </div>
           </>
         )}
-      </div>
-    </div>
-  );
-}
-             <div className="flex items-start gap-2">
-               <ChevronRight size={16} className="text-sole-red shrink-0 mt-0.5" />
-               <p>Pay the remaining 50% (₹{product.price - holdAmount}) within 48 hours to complete purchase.</p>
-             </div>
-             <div className="flex items-start gap-2">
-               <ChevronRight size={16} className="text-sole-red shrink-0 mt-0.5" />
-               <p>If not purchased, 25% holding fee (₹{deductionAmount}) is deducted and ₹{refundAmount} will be refunded.</p>
-             </div>
-           </div>
-
-           {error && (
-             <p className="text-sole-red bg-sole-red/10 border border-sole-red/20 p-4 text-sm mt-4">
-               {error}
-             </p>
-           )}
-        </div>
-
-        {/* Actions */}
-        <div className="p-6 pt-0 border-none flex flex-col gap-3">
-           <button 
-             className="btn-primary w-full py-4 text-sm flex items-center justify-center gap-2 relative"
-             onClick={handleReserve}
-             disabled={isLoading}
-           >
-             {isLoading ? (
-               <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-sole-white border-t-transparent rounded-full animate-spin" /> Processing...</span>
-             ) : (
-               <>Pay ₹{holdAmount} via UPI</>
-             )}
-           </button>
-           <button 
-             className="btn-ghost"
-             onClick={onClose}
-             disabled={isLoading}
-           >
-             Cancel
-           </button>
-           <div className="flex items-center justify-center gap-2 mt-4 text-sole-grey font-mono text-[10px] uppercase tracking-widest">
-             <ShieldCheck size={14} /> 100% Secure via Razorpay
-           </div>
-        </div>
       </div>
     </div>
   );
